@@ -1,0 +1,27 @@
+---
+import BaseLayout from '@/layouts/BaseLayout'
+import TitlePage from '@/components/TitlePage'
+import { getTags } from '@/utils'
+---
+
+<BaseLayout title='Tags'>
+	<TitlePage title='About me' />
+	<article>
+		<div class='prose prose-lg md:prose-xl dark:prose-invert mb-12 min-w-full'>
+			<h2>Who am I?</h2>
+			<p>
+				👋 Hi, I’m Daniel — a full-stack developer with a strong focus on Angular and modern web
+				technologies. Over the years I’ve worked in both product and consulting roles, including
+				leading development at my own successful startup.
+				<br />
+				<br /> I enjoy building clean, scalable solutions and helping teams grow — not just by shipping
+				code, but by improving developer experience, processes, and collaboration. My background in consulting
+				has given me the chance to adapt quickly, deliver value in different domains, and mentor teams
+				to succeed. <br />
+				<br />This blog is where I share notes, learnings, and experiments from my day-to-day work —
+				part knowledge base for myself, or for anyone looking for solutions to specific problems, or
+				is just curious about how I approach software engineering.
+			</p>
+		</div>
+	</article>
+</BaseLayout>

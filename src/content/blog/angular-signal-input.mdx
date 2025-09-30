@@ -1,10 +1,12 @@
 ---
-title: 'Angular 17 - Signal Inputs'
+heroImage: /src/assets/images/bg.jpg
+category: Angular
 description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non dia'
-pubDate: 'Jul 02 2022'
-heroImage: '../../assets/images/te.jpg'
-category: 'Angular'
-tags: ['Angular', 'TypeScript']
+pubDate: 2022-07-01T22:00:00.000Z
+tags:
+  - Angular
+  - TypeScript
+title: Angular 17 - Signal Inputs
 ---
 
 **If you know HTML, you already know enough to write your first Astro component.**
@@ -34,7 +36,7 @@ const name = 'Astro'
 
 Local variables can be used in curly braces to pass attribute values to both HTML elements and components:
 
-```astro title="src/components/DynamicAttributes.astro" "{name}" "${name}"
+```astro
 ---
 const name = 'Astro'
 ---
@@ -44,7 +46,7 @@ const name = 'Astro'
 <MyComponent templateLiteralNameAttribute={`MyNameIs${name}`} />
 ```
 
-:::caution
+\:::caution
 HTML attributes will be converted to strings, so it is not possible to pass functions and objects to HTML elements.
 For example, you can't assign an event handler to an HTML element in an Astro component:
 
@@ -76,13 +78,13 @@ Instead, use a client-side script to add the event handler, like you would in va
 </script>
 ```
 
-:::
+\:::
 
 ### Dynamic HTML
 
 Local variables can be used in JSX-like functions to produce dynamically-generated HTML elements:
 
-```astro title="src/components/DynamicHtml.astro" "{item}"
+```astro
 ---
 const items = ['Dog', 'Cat', 'Platypus']
 ---
@@ -94,7 +96,7 @@ const items = ['Dog', 'Cat', 'Platypus']
 
 Astro can conditionally display HTML using JSX logical operators and ternary expressions.
 
-```astro title="src/components/ConditionalHtml.astro" "visible"
+```astro
 ---
 const visible = true
 ---
@@ -108,7 +110,7 @@ const visible = true
 
 You can also use dynamic tags by setting a variable to an HTML tag name or a component import:
 
-```astro title="src/components/DynamicTags.astro" /Element|(?<!My)Component/
+```astro
 ---
 import MyComponent from './MyComponent.astro'
 const Element = 'div'
@@ -123,9 +125,8 @@ const Component = MyComponent
 
 When using dynamic tags:
 
-- **Variable names must be capitalized.** For example, use `Element`, not `element`. Otherwise, Astro will try to render your variable name as a literal HTML tag.
-
-- **Hydration directives are not supported.** When using [`client:*` hydration directives](/en/core-concepts/framework-components/#hydrating-interactive-components), Astro needs to know which components to bundle for production, and the dynamic tag pattern prevents this from working.
+* **Variable names must be capitalized.** For example, use `Element`, not `element`. Otherwise, Astro will try to render your variable name as a literal HTML tag.
+* **Hydration directives are not supported.** When using [`client:*` hydration directives](/en/core-concepts/framework-components/#hydrating-interactive-components), Astro needs to know which components to bundle for production, and the dynamic tag pattern prevents this from working.
 
 ### Fragments
 
@@ -133,7 +134,7 @@ Astro supports using either `<Fragment> </Fragment>` or the shorthand `<> </>`.
 
 Fragments can be useful to avoid wrapper elements when adding [`set:*` directives](/en/reference/directives-reference/#sethtml), as in the following example:
 
-```astro title="src/components/SetHtml.astro" "Fragment"
+```astro
 ---
 const htmlString = '<p>Raw HTML content</p>'
 ---
@@ -149,7 +150,7 @@ Astro component syntax is a superset of HTML. It was designed to feel familiar t
 
 In Astro, you use the standard `kebab-case` format for all HTML attributes instead of the `camelCase` used in JSX. This even works for `class`, which is not supported by React.
 
-```jsx del={1} ins={2} title="example.astro"
+```jsx
 <div className="box" dataValue="3" />
 <div class="box" data-value="3" />
 ```
@@ -158,7 +159,7 @@ In Astro, you use the standard `kebab-case` format for all HTML attributes inste
 
 An Astro component template can render multiple elements with no need to wrap everything in a single `<div>` or `<>`, unlike JavaScript or JSX.
 
-```astro title="src/components/RootElements.astro"
+```astro
 ---
 // Template with multiple elements
 ---
@@ -171,7 +172,7 @@ An Astro component template can render multiple elements with no need to wrap ev
 
 In Astro, you can use standard HTML comments or JavaScript-style comments.
 
-```astro title="example.astro"
+```astro
 ---
 
 ---
@@ -179,6 +180,6 @@ In Astro, you can use standard HTML comments or JavaScript-style comments.
 <!-- HTML comment syntax is valid in .astro files -->{/* JS comment syntax is also valid */}
 ```
 
-:::caution
+\:::caution
 HTML-style comments will be included in browser DOM, while JS ones will be skipped. To leave TODO messages or other development-only explanations, you may wish to use JavaScript-style comments instead.
-:::
+\:::
