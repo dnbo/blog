@@ -1,0 +1,275 @@
+---
+heroImage: '/src/assets/images/ChatGPT Image Feb 4, 2026, 08_32_47 PM.png'
+category: Angular
+description: >-
+  We've all been there... In the rush to ship features, it's easy to let every
+  class member default to the public member accessor and move on, not thinking
+  more about it. But this seemingly small decision compounds over time, creating
+  codebases where intent is unclear, boundaries are violated, and refactoring
+  becomes treacherous. Let's change that!
+pubDate: 2026-02-02T14:14:21.482Z
+tags:
+  - angular
+title: 'Intentional Code: Strict Member Accessibility in Angular'
+---
+
+This is a part of a series of blog posts discussing the idea of “intentional code”. With the term “intentional code” we're trying to encapsulate the idea that all code serves a purpose, and that it's been written with intention and no ambiguity.
+
+***
+
+## What Is Intentional Code?
+
+I've always been in favor of writing code that doesn't have comments. Some comments may be fine, but a codebase littered with explanations telling you what each function or property does to be able to understand what is happening when run, that is just bad.
+
+Intentional code is code that explicitly communicates its purpose and constraints. Every public method is a deliberate contract, because it's been intentionally declared public. The same goes for the opposite, every private field is a clear signal: "This is mine to change." When you write code intentionally, you're not just solving today's problem—you're leaving guideposts for the next developer, including yourself six months from now.
+
+The alternative is implicit code: variables that happen to be public because that's the default, methods that anyone can call because you didn't think to restrict them. Implicit code creates cognitive overhead, because it forces developers (you) to stop and think “Should I really be touching this?”. Future developers must infer intent from context, usage patterns, or team knowledge. This slows down reasoning, increases bugs, and makes refactoring feel like defusing a bomb.
+
+## The Long-Term Maintainability Argument
+
+Consider a component with 20 properties. If they're all public, you have no idea which ones are safe to modify, which are used externally, or which are implementation details. When you need to refactor, you're forced to search the entire codebase, check templates, examine child components, and hope you didn't miss anything. Of course, modern tooling in IDE's help us out alot making the previous statement a bit exaggerated, but you get the idea.
+
+> You can refactor private members with confidence, knowing they're not referenced outside this file. Public members represent your actual contract.
+
+Now imagine the same component with clear accessibility: five public properties that form the component's API, ten private properties for internal state, and five protected properties for inheritance. The surface area just became obvious. You can refactor private members with confidence, knowing they're not referenced outside this file. Public members represent your actual contract.
+
+This clarity compounds over years. Codebases with strict accessibility age gracefully because the boundaries prevent decay. You can't accidentally couple components through direct property access because the language prevents it. The type system becomes your documentation and your guardrails.
+
+## Team Alignment Through Constraints
+
+When everyone on a team writes with strict accessibility, a shared language emerges. Code reviews become focused on API design rather than implementation details. New team members understand component boundaries without reading every line. The private keyword becomes a permission structure: "Don't worry about this unless you're working in this file."
+
+This is particularly valuable in Angular applications where components, services, and directives form complex interaction patterns. When a service method is explicitly public, it's an invitation for other parts of the system to depend on it. When it's private, it's a promise that refactoring won't have ripple effects.
+
+Teams aligned on intentionality move faster because they spend less time in clarification meetings and debugging mysterious coupling. The code itself answers questions that would otherwise require interrupting a colleague.
+
+## TypeScript Member Accessibility: The Basics
+
+Let's step a way from Angular for a bit, and start with the underlying language tools we have at our disposal. TypeScript provides three access modifiers that work at compile-time: **public, private** and **protected.**
+
+### Public members 
+
+Accessible from anywhere. This is the default if you omit the modifier, but explicit is better than implicit. Use it for the external API of your class or service properties that should be accessible from the outside. Remember, **public** properties are visible to everyone!
+
+### Private members
+
+Accessible only within the class. TypeScript enforces this at compile-time, but remember: it compiles away and offers no runtime protection, so you can always access it via bracket name notation: `foo['bar']`. JavaScript's true private fields (#fieldName) provide runtime privacy if needed, but this is a whole other topic.
+
+### Protected
+
+Accessible within the class and its subclasses. Useful for inheritance hierarchies where you want to expose internals to derived classes without making them fully public. This is especially useful in Angular components, which we'll get to!
+
+```ts
+class DataService {
+  public fetchData(): Observable<Data> { /* ... */ }
+  protected transformResponse(raw: unknown): Data { /* ... */ }
+  private apiUrl = 'https://api.example.com';
+}
+
+```
+
+The mental model: public is your contract, protected is your inheritance API (used in derived classes), private is your implementation.
+
+## Angular-Specific Considerations
+
+Angular adds complexity because templates have access to the component class. This is where many developers discover that their accessibility choices matter.
+
+### Template access
+
+Angular templates can only access public and protected members of the component class (with some caveats we'll discuss). This means that
+
+```ts
+@Component({
+  template: `
+    <div>{{ publicValue }}</div>  <!-- ✓ Works -->
+    <div>{{ privateValue }}</div> <!-- ✗ Compile error with strictTemplates -->
+    <div>{{ protectedValue }}</div> <!-- ✓ Works -->
+  `
+})
+export class MyComponent {
+  public publicValue = 'visible';
+  private privateValue = 'hidden';
+  protected protectedValue = 'this also works!';
+}
+```
+
+#### Important takeaways
+
+* Public properties are always available in templates.
+* Protected properties are always always available in templates.
+* Private properties are available in templates if and only if, strictTemplates is set to false in tsconfig.json.
+
+With Angular's strictTemplates flag enabled in your tsconfig.json, attempting to access private members in templates will fail compilation. This is exactly what you want—it forces you to be intentional about what your template can use.
+
+However, there's a nuance: without strictTemplates, Angular will allow template access to private members at runtime, but your IDE will warn you. Don't let this leniency make you sloppy, enable strict template checking.
+
+### ViewChild and ContentChild
+
+You cannot access private or protected properties of a child component through a ViewChild reference, nor a ContentChild reference, thus making it safe to use when member accessibility is explicitly set. TypeScript will prevent you from accessing secretData because it's private, which is correct. This demonstrates why encapsulation matters, the type system is your ally and prevents you from reaching into components where you shouldn't.
+
+The right approach: expose what needs to be accessed via public methods or properties. If a parent needs child data, the child should provide it explicitly.
+
+```ts
+@Component({
+  selector: 'app-child',
+  template: '<p>Child</p>'
+})
+class ChildComponent {
+  public exposedData = 'accessible';
+  private secretData = 'truly secret';
+  protected familyData = 'only for descendants';
+}
+
+@Component({ template: '<app-child></app-child>' })
+class ParentComponent {
+  private readonly child = viewChild<ChildComponent>(ChildComponent);
+
+  constructor() {
+    effect(() => {
+      console.log(this.child.exposedData); // ✓ Works - public
+      console.log(this.child.secretData); // ✗ TypeScript error - private
+      console.log(this.child.familyData); // ✗ TypeScript error - protected
+    });
+  }
+}
+```
+
+### Input, Output and Model Accessibility
+
+Inputs, Outputs and Models on components are always public. Using the model-signal introduced in Angular 19 makes it easy to share and update data between parent- and child components.
+
+```
+@Component({ /* ... */ })
+class MyComponent {
+  public readonly data = input<string>('initial data');
+  public readonly dataUpdated = output<string>();
+  public readonly twoWayData = model<string>('two way initial');
+}
+```
+
+Some developers might have the opinion that the public keyword in the above snippet is unnecessary, but when a junior developer runs into this piece of code, there will be no confusion.
+
+## Practical patterns
+
+### Services with clear boundaries
+
+```ts
+// Comments are included for educational purposes ;)
+
+@Injectable({ providedIn: 'root' })
+export class DataService {
+  // Public API - what consumers use
+  public getData(id: string): Observable<Data> {
+    return this.fetchWithCache(id);
+  }
+
+  public refreshData(id: string): Observable<Data> {
+    this.clearCache(id);
+    return this.getData(id);
+  }
+
+  public submitData(data: Data): Observable<void> {
+    return this.http.post<void>(this.buildUrl('/data'), data).pipe(
+      tap(() => this.clearCache(data.id))
+    );
+  }
+
+  // Protected - extensibility points for potential subclasses. Most likely, this should be a private member, but if the service is extended, this could be useful if the baseUrl were to be something else.
+  protected buildUrl(endpoint: string): string {
+    return `${this.baseUrl}${endpoint}`;
+  }
+
+  protected handleError(error: HttpErrorResponse): Observable<never> {
+    console.error('API error:', error);
+    return throwError(() => new Error('Request failed'));
+  }
+
+  // Private implementation details
+  private http = inject(HttpClient);
+  private baseUrl = environment.apiUrl;
+  private cache = new Map<string, Data>();
+
+  private fetchWithCache(id: string): Observable<Data> {
+    const cached = this.cache.get(id);
+    if (cached) {
+      return of(cached);
+    }
+
+    return this.http.get<Data>(this.buildUrl(`/data/${id}`)).pipe(
+      tap(data => this.cache.set(id, data)),
+      catchError(err => this.handleError(err))
+    );
+  }
+
+  private clearCache(id: string): void {
+    this.cache.delete(id);
+  }
+}
+```
+
+In the above service, we have some clear boundaries. It's a service that handles data fetching, but also caching of the returned data. The separation is clear. There's no need for consumers to know anything about the caching mechanisms or the actual HTTP calls being made, so those members can be kept private. The consumers only need to know how to call the service to retrieve data from some backend. 
+
+The buildUrl and handleError would in most cases be private but I've kept them for now to illustrate how an extension service to our DataService could modify those with the override keyword.
+
+### Component Encapsulation
+
+```ts
+@Component({
+  selector: 'app-user-profile',
+  template: `
+    <h2>{{ displayName }}</h2>
+    <button (click)="onEdit()">Edit</button>
+  `
+})
+export class UserProfileComponent {
+  // Public inputs - external contract
+  public readonly userId!: input.required<number>();
+
+  // Public template API
+  protected displayName = '';
+
+
+  // Private implementation
+  private userService = inject(UserService);
+  private router = inject(Router);
+    
+  private loadUser(): void {
+    ...
+  }
+
+
+  // Public for the template
+  protected onEdit(): void {
+    this.router.navigate(['/users', this.userId, 'edit']);
+  }
+}
+```
+
+## How This Makes You a Better Developer
+
+Writing with strict accessibility forces you to think in abstractions. You can't hide behind "I'll just make everything public and figure it out later." You must decide: Is this part of my contract? Is this an implementation detail? Should this be extensible?
+
+This mental discipline improves your design skills. You start thinking about modules, boundaries, and dependencies. You ask better questions during code review: "Should this really be public? What happens if someone depends on this?"
+
+It also improves your reasoning about code. When debugging, you can immediately narrow your search space. If a bug involves a private method, you only need to examine the current class. If it's public, you check dependents. The accessibility modifier becomes a reasoning tool.
+
+### Getting Started
+
+Enable strict template checking and adopt a team convention. You can also use tools like ESLint and the rule @typescript-eslint/explicit-member-accessibility to enforce this.
+
+```
+// tsconfig.json
+{
+  "angularCompilerOptions": {
+    "strictTemplates": true
+  }
+}
+```
+
+Establish a pattern: make everything private by default, then loosen as needed. It's much easier to make something more accessible than to restrict it later when dependencies have formed.
+
+Code review checklist: Are all class members explicitly marked? Do public members represent the actual API? Could any public members be private or protected?
+
+### Conclusion
+
+Intentional code isn't about being pedantic. It's about building systems that communicate, scale, and endure. Strict member accessibility in Angular is one of the simplest ways to embed intent directly into your code. It costs almost nothing to write, but pays dividends in maintainability, team velocity, and your own development as an engineer who builds things that last.

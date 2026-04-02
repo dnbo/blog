@@ -20,7 +20,7 @@
 		"url": "https://github.com/danielcgilibert/blog-template/issues"
 	},
 	"scripts": {
-		"dev": "npx tinacms dev -c \"astro dev\"",
+		"dev": "tinacms dev --datalayer-port 8585 -c \"astro dev\"",
 		"start": "astro dev",
 		"build": "astro build",
 		"sync": "astro sync",
@@ -33,17 +33,29 @@
 		"prepare": "husky install"
 	},
 	"dependencies": {
-		"@astrojs/rss": "4.0.1",
-		"astro": "4.0.8",
-		"astro-font": "^0.0.72"
+		"@astrojs/rss": "4.0.14",
+		"astro": "5.16.9",
+		"astro-font": "^0.0.72",
+		"react": "^18.3.1",
+		"react-dnd": "^16.0.1",
+		"react-dnd-html5-backend": "^16.0.1",
+		"react-dom": "^18.3.1",
+		"scheduler": "^0.27.0",
+		"slate": "^0.120.0",
+		"slate-dom": "^0.119.0",
+		"use-sync-external-store": "^1.6.0"
 	},
 	"devDependencies": {
-		"@astrojs/mdx": "2.0.3",
-		"@astrojs/sitemap": "3.0.4",
-		"@astrojs/tailwind": "5.1.0",
+		"@astrojs/mdx": "4.3.13",
+		"@astrojs/sitemap": "3.6.1",
+		"@astrojs/tailwind": "6.0.2",
 		"@pagefind/default-ui": "^1.0.4",
 		"@tailwindcss/typography": "0.5.10",
-		"@tinacms/cli": "^1.5.30",
+		"@tinacms/cli": "^2.1.1",
+		"@types/react": "^19",
+		"@types/react-dom": "^19",
+		"@types/scheduler": "^0",
+		"@types/use-sync-external-store": "^1",
 		"@typescript-eslint/parser": "^6.16.0",
 		"clsx": "2.0.0",
 		"eslint": "^8.56.0",
@@ -61,12 +73,13 @@
 		"slugify": "^1.6.6",
 		"tailwind-merge": "2.0.0",
 		"tailwindcss": "3.3.5",
-		"tinacms": "^1.5.21",
+		"tinacms": "^3.3.1",
 		"typescript": "^5.2.2"
 	},
 	"lint-staged": {
 		"*.{astro,js,jsx,ts,tsx,md,mdx,json}": [
 			"prettier --write --plugin-search-dir=."
 		]
-	}
+	},
+	"packageManager": "yarn@4.12.0"
 }
