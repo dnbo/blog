@@ -5,7 +5,6 @@ import tailwind from '@astrojs/tailwind'
 import { remarkReadingTime } from './src/utils/readTime.ts'
 import ayuDark from 'shiki/themes/ayu-dark.mjs'
 
-
 	
 
 // https://astro.build/config
